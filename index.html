@@ -506,6 +506,8 @@
           ⬆️ Importer JSON
           <input id="fileImport" type="file" accept="application/json" style="display: none;" />
         </label>
+        <button id="btnSaveCloud" class="btn-primary">☁️ Sauvegarder (cloud)</button>
+        <button id="btnLoadCloud" class="btn-secondary">☁️ Charger (cloud)</button>
       </div>
       <p id="storageHelp" class="small">
         Pour la V0, les données sont sauvegardées dans ton navigateur. L’export JSON simule le futur
@@ -587,7 +589,11 @@
         btnReset: "♻️ Réinitialiser",
         btnExport: "⬇️ Exporter JSON",
         btnImport: "⬆️ Importer JSON",
-        btnAddIntervenant: "+ Ajouter un intervenant",
+        btnSaveCloud: "☁️ Sauvegarder (cloud)",
+        btnLoadCloud: "☁️ Charger (cloud)",
+        cloudSaveOk: "Projet sauvegardé dans le cloud.",
+        cloudLoadNotFound: "Aucun projet trouvé pour ce numéro.",
+        cloudError: "Erreur lors de la communication avec le serveur.",
         storageHelp:
           "Pour la V0, les données sont sauvegardées dans ton navigateur. L’export JSON simule le futur data.json dans le dossier du chantier.",
         thEntreprise: "Entreprise",
@@ -608,6 +614,7 @@
         btnDelete: "Supprimer",
         btnVacancesShow: "Afficher congés",
         btnVacancesHide: "Masquer congés",
+        btnAddIntervenant: "+ Ajouter un intervenant",
         btnEditOn: "✏️ Mode édition",
         btnEditOff: "🔒 Lecture seule",
         confirmReset: "Réinitialiser toutes les données du chantier ?",
@@ -634,6 +641,11 @@
         btnReset: "♻️ Reset",
         btnExport: "⬇️ Export JSON",
         btnImport: "⬆️ Import JSON",
+        btnSaveCloud: "☁️ Save (cloud)",
+        btnLoadCloud: "☁️ Load (cloud)",
+        cloudSaveOk: "Project saved to the cloud.",
+        cloudLoadNotFound: "No project found for this number.",
+        cloudError: "Error while communicating with the server.",
         btnAddIntervenant: "+ Add participant",
         storageHelp:
           "For V0, data is stored in your browser. JSON export simulates the future data.json in the job folder.",
@@ -752,6 +764,8 @@
       document.getElementById("btnReset").textContent = t.btnReset;
       document.getElementById("btnExport").textContent = t.btnExport;
       document.getElementById("labelImport").firstChild.textContent = t.btnImport + " ";
+      document.getElementById("btnSaveCloud").textContent = t.btnSaveCloud;
+      document.getElementById("btnLoadCloud").textContent = t.btnLoadCloud;
 
       document.getElementById("btnAddIntervenant").textContent = t.btnAddIntervenant;
       document.getElementById("storageHelp").textContent = t.storageHelp;
@@ -791,6 +805,10 @@
     // ======== Modèle de données ========
 
     const STORAGE_KEY = "p3w-data-v0";
+    // ======== Config API backend (mini backend Vercel) ========
+    // À adapter quand tu auras créé p3w-api sur Vercel
+    const API_BASE_URL = "https://p3w-api.vercel.app"; // ex: https://p3w-api-xxx.vercel.app
+
 
     let data = {
       chantier: {
@@ -1055,6 +1073,106 @@
         btn.textContent = editable ? t.btnEditOff : t.btnEditOn;
       }
     }
+
+    // ======== Cloud : payload & appels API ========
+
+    function getProjectId() {
+      const projectId = (data.chantier.numeroProjet || "").trim();
+      if (!projectId) {
+        alert(
+          currentLang === "fr"
+            ? "Merci de saisir un numéro de projet (champ 'Numéro du projet')."
+            : "Please enter a project number (field 'Project number')."
+        );
+        return null;
+      }
+      return projectId;
+    }
+
+    // Ce qu'on envoie au backend
+    function getCurrentProjectPayload() {
+      const projectId = getProjectId();
+      if (!projectId) return null;
+
+      return {
+        projectId,
+        chantier: { ...data.chantier },
+        intervenants: [...data.intervenants]
+      };
+    }
+
+    // Ce qu'on reçoit du backend
+    function applyProjectPayload(payload) {
+      if (!payload) return;
+
+      if (!payload.chantier || !Array.isArray(payload.intervenants)) {
+        console.warn("Payload inattendu depuis l'API :", payload);
+      }
+
+      data.chantier = payload.chantier || data.chantier;
+      data.intervenants = payload.intervenants || [];
+
+      bindFormFromData();
+      renderIntervenantsTable();
+      renderGantt();
+      setDirty(false);
+    }
+
+    async function saveToCloud() {
+      const t = translations[currentLang];
+      const payload = getCurrentProjectPayload();
+      if (!payload) return;
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}/api/save`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          console.error("Erreur HTTP save:", resp.status, await resp.text());
+          alert(t.cloudError);
+          return;
+        }
+
+        setDirty(false);
+        alert(t.cloudSaveOk);
+      } catch (err) {
+        console.error("Erreur saveToCloud:", err);
+        alert(t.cloudError);
+      }
+    }
+
+    async function loadFromCloud() {
+      const t = translations[currentLang];
+      const projectId = getProjectId();
+      if (!projectId) return;
+
+      try {
+        const resp = await fetch(
+          `${API_BASE_URL}/api/load?projectId=${encodeURIComponent(projectId)}`
+        );
+
+        if (resp.status === 404) {
+          alert(t.cloudLoadNotFound);
+          return;
+        }
+
+        if (!resp.ok) {
+          console.error("Erreur HTTP load:", resp.status, await resp.text());
+          alert(t.cloudError);
+          return;
+        }
+
+        const payload = await resp.json();
+        applyProjectPayload(payload);
+      } catch (err) {
+        console.error("Erreur loadFromCloud:", err);
+        alert(t.cloudError);
+      }
+    }
+
 
     // ======== Intervenants ========
 
@@ -1431,6 +1549,22 @@
 
       document.getElementById("btnPrint").addEventListener("click", () => {
         window.print();
+      });
+
+      document.getElementById("btnSaveLocal").addEventListener("click", () => {
+        saveToLocalStorage();
+      });
+
+      document.getElementById("btnSaveLocal").addEventListener("click", () => {
+        saveToLocalStorage();
+      });
+
+      document.getElementById("btnSaveCloud").addEventListener("click", () => {
+        saveToCloud();
+      });
+
+      document.getElementById("btnLoadCloud").addEventListener("click", () => {
+        loadFromCloud();
       });
 
       document.getElementById("btnReset").addEventListener("click", () => {
