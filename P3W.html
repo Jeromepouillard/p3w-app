@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>P3W - Planification Chantier</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* --- Styles de base --- */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 16px;
+      color: #111827;
+
+      /* Fond général avec ton vrai nid d’abeille */
+      background-color: #e5e7eb;
+      background-image: url("honeycomb.png");
+      background-size: 300px auto;
+      background-repeat: repeat;
+      background-position: center top;
+      opacity: 1;
+    }
+
+    .page-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* --- Header avec nid d’abeille & logo --- */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      color: #f9fafb;
+      background:
+        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.13) 0, transparent 40%),
+        radial-gradient(circle at 85% 0, rgba(230, 215, 215, 0.315) 0, transparent 40%),
+        #111827;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-inner {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 1;
+    }
+
+    .logo-box {
+      min-width: 140px;
+      height: 52px;
+      border-radius: 10px;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #111827;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.20);
+      padding: 4px 10px;
+      box-sizing: border-box;
+    }
+
+    .logo-box span {
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .header-titles h1 {
+      margin: 0 0 2px;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .header-titles p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+    }
+
+    .header-right {
+      position: relative;
+      z-index: 1;
+    }
+
+    .lang-toggle {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #9ca3af;
+      background: rgba(17,24,39,0.8);
+      color: #f9fafb;
+    }
+
+    .lang-toggle:hover {
+      background: #1f2937;
+    }
+
+    h2, h3 {
+      margin: 0 0 8px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+
+    .card-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #4b5563;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      background: #ffffff;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb33;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #d1d5db;
+      color: #111827;
+    }
+
+    .small {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #ecfdf3;
+      color: #166534;
+    }
+
+    .status-pill span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    /* --- Tableau intervenants --- */
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    thead th {
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px 4px;
+      background: #f9fafb;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody td {
+      border-bottom: 1px solid #f3f4f6;
+      padding: 4px;
+      vertical-align: middle;
+    }
+
+    .table-container {
+      max-height: 220px;
+      overflow: auto;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      background: white;
+    }
+
+    .input-inline {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .card-collapsible-toggle {
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.8rem;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+    }
+
+    /* --- P3W / Gantt --- */
+
+    .gantt-container {
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      overflow: auto;
+      background: white;
+      max-height: 420px;
+    }
+
+    .gantt-month-header {
+      background: #111827;
+      color: #0f271d; /* (on peut passer à blanc plus tard si tu veux) */
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .gantt-table th,
+    .gantt-table td {
+      border: 1px solid #e5e7eb;
+      padding: 2px 4px;
+      font-size: 0.75rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* Largeur réduite pour toutes les colonnes de jours */
+    .gantt-table th:not(.gantt-left-col):not(.gantt-month-header),
+    .gantt-table td:not(.gantt-left-col) {
+      min-width: 32px;   /* avant ≈ 60px → maintenant moitié moins */
+      padding: 2px 2px;  /* padding réduit pour compacter encore plus */
+    }
+
+    .gantt-table thead th {
+      position: sticky;
+      top: 0;
+      background: #f3f4f6;
+      z-index: 2;
+    }
+
+    .gantt-left-col {
+      position: sticky;
+      left: 0;
+      background: #ffffff;
+      z-index: 3;
+      min-width: 140px;
+      text-align: left !important;
+      font-weight: 500;
+    }
+
+    .gantt-cell-active {
+      background: #bfdbfe;
+      border-color: #93c5fd;
+      font-weight: 600;
+    }
+
+    .gantt-cell-empty {
+      background: #ffffff;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      font-size: 0.7rem;
+      margin-left: 4px;
+    }
+
+    .btn-icon-small {
+      padding: 2px 6px;
+      font-size: 0.7rem;
+    }
+
+    .gantt-weekend {
+      background: #f3f4f6;
+    }
+
+    .gantt-day-off {
+      background: #fee2e2;
+    }
+
+    /* Week-ends et jours fériés plus étroits (≈ 1/3 de 60px) */
+    .gantt-table th.gantt-weekend,
+    .gantt-table td.gantt-weekend,
+    .gantt-table th.gantt-day-off,
+    .gantt-table td.gantt-day-off {
+      min-width: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 8px;
+      }
+      .card {
+        padding: 12px 12px;
+      }
+      .header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+
+    /* ================== MODE IMPRESSION ================== */
+    @media print {
+      @page {
+        size: 11in 17in landscape;
+        margin: 10mm;
+      }
+
+      body {
+        padding: 0;
+        background: #ffffff !important;
+      }
+
+      .page-container {
+        max-width: 100%;
+        margin: 0;
+      }
+
+      .card {
+        box-shadow: none;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+
+      .button-row,
+      .status-pill,
+      #btnLangSwitch,
+      #storageHelp,
+      #intervenantsHelp,
+      .card-collapsible-toggle {
+        display: none !important;
+      }
+
+      #cardIntervenants {
+        display: none !important;
+      }
+
+      .table-container,
+      .gantt-container {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+
+      .header-bar {
+        margin-bottom: 8px;
+      }
+
+      .header-bar,
+      .card {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+
+    <!-- Header avec logo + titre + switch langue -->
+    <header class="header-bar">
+      <div class="header-inner">
+        <div class="logo-box">
+          <img src="logo-pr-desjardins.png" alt="P+R Desjardins"
+               style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+        <div class="header-titles">
+          <h1 id="appTitle">Planification à 3 semaines</h1>
+          <p id="subtitle" class="small">
+            Tableau P3W – coordination Chargé de projet / Surintendant / intervenants.
+          </p>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="btnLangSwitch" class="lang-toggle">FR</button>
+      </div>
+    </header>
+
+    <!-- === Carte 1 : Infos chantier === -->
+    <div class="card">
+      <div class="card-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2 id="cardTitleChantier">Informations du chantier</h2>
+          <button id="btnToggleEditChantier" class="btn-outline btn-icon-small">✏️</button>
+        </div>
+        <div class="status-pill">
+          <span class="dot"></span>
+          <span id="status-text">Non sauvegardé</span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <label id="labelCp" for="cp">Chargé de projet</label>
+          <select id="cp"></select>
+        </div>
+        <div>
+          <label id="labelSurintendant" for="surintendant">Surintendant</label>
+          <select id="surintendant"></select>
+        </div>
+        <div>
+          <label id="labelNomProjet" for="nomProjet">Nom du projet</label>
+          <input id="nomProjet" type="text" />
+        </div>
+        <div>
+          <label id="labelNumeroProjet" for="numeroProjet">Numéro du projet</label>
+          <input id="numeroProjet" type="text" />
+        </div>
+        <div>
+          <label id="labelClient" for="client">Client</label>
+          <input id="client" type="text" />
+        </div>
+        <div>
+          <label id="labelAdresse" for="adresse">Adresse du chantier</label>
+          <input id="adresse" type="text" />
+        </div>
+        <div>
+          <label id="labelDateDebutChantier" for="dateDebutChantier">Date de début du chantier</label>
+          <input id="dateDebutChantier" type="date" />
+        </div>
+        <div>
+          <label id="labelDureeSemaines" for="dureeSemaines">Durée du chantier (en semaines)</label>
+          <input id="dureeSemaines" type="number" min="0" step="1" />
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="btnSaveLocal" class="btn-primary">💾 Enregistrer (local)</button>
+        <button id="btnPrint" class="btn-secondary">🖨️ Imprimer</button>
+        <button id="btnReset" class="btn-secondary">♻️ Réinitialiser</button>
+        <button id="btnExport" class="btn-outline">⬇️ Exporter JSON</button>
+        <label id="labelImport" class="btn-outline" style="cursor: pointer;">
+          ⬆️ Importer JSON
+          <input id="fileImport" type="file" accept="application/json" style="display: none;" />
+        </label>
+      </div>
+      <p id="storageHelp" class="small">
+        Pour la V0, les données sont sauvegardées dans ton navigateur. L’export JSON simule le futur
+        <code>data.json</code> dans le dossier du chantier.
+      </p>
+    </div>
+
+    <!-- === Carte 2 : Intervenants === -->
+    <div class="card" id="cardIntervenants">
+      <div class="card-header">
+        <h2 id="cardTitleIntervenants">Intervenants du chantier</h2>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button id="btnAddIntervenant" class="btn-primary">+ Ajouter un intervenant</button>
+          <button id="btnToggleIntervenants" class="card-collapsible-toggle">▼</button>
+        </div>
+      </div>
+
+      <div id="intervenantsContent">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th id="thEntreprise">Entreprise</th>
+                <th id="thDebut">Début</th>
+                <th id="thFin">Fin</th>
+                <th id="thNotes">Notes</th>
+                <th id="thActions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="intervenantsBody">
+              <!-- Lignes générées en JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="intervenantsHelp" class="small">
+          Les dates d’intervention seront utilisées pour générer automatiquement le diagramme P3W ci-dessous.
+        </p>
+      </div>
+    </div>
+
+    <!-- === Carte 3 : Diagramme P3W === -->
+    <div class="card">
+      <div class="card-header">
+        <h2 id="cardTitleGantt">Diagramme P3W (vue hebdomadaire)</h2>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="small" id="ganttInfo"></span>
+          <button id="btnToggleVacances" class="btn-secondary btn-icon-small">
+            Masquer congés
+          </button>
+        </div>
+      </div>
+
+      <div class="gantt-container" id="ganttContainer">
+        <!-- Gantt généré en JS -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ======== Config langue & libellés ========
+    let currentLang = "fr";
+
+    const translations = {
+      fr: {
+        appTitle: "Planification à 3 semaines",
+        subtitle: "Tableau P3W – coordination Chargé de projet / Surintendant / intervenants.",
+        cardTitleChantier: "Informations du chantier",
+        cardTitleIntervenants: "Intervenants du chantier",
+        cardTitleGantt: "Diagramme P3W (vue hebdomadaire)",
+        labelCp: "Chargé de projet",
+        labelSurintendant: "Surintendant",
+        labelNomProjet: "Nom du projet",
+        labelNumeroProjet: "Numéro du projet",
+        labelClient: "Client",
+        labelAdresse: "Adresse du chantier",
+        labelDateDebutChantier: "Date de début du chantier",
+        labelDureeSemaines: "Durée du chantier (en semaines)",
+        btnSaveLocal: "💾 Enregistrer (local)",
+        btnReset: "♻️ Réinitialiser",
+        btnExport: "⬇️ Exporter JSON",
+        btnImport: "⬆️ Importer JSON",
+        btnAddIntervenant: "+ Ajouter un intervenant",
+        storageHelp:
+          "Pour la V0, les données sont sauvegardées dans ton navigateur. L’export JSON simule le futur data.json dans le dossier du chantier.",
+        thEntreprise: "Entreprise",
+        thDebut: "Début",
+        thFin: "Fin",
+        thNotes: "Notes",
+        thActions: "Actions",
+        intervenantsHelp:
+          "Les dates d’intervention seront utilisées pour générer automatiquement le diagramme P3W ci-dessous.",
+        statusDirty: "Modifications non enregistrées",
+        statusSaved: "Sauvegardé localement",
+        ganttNeedData:
+          "Veuillez saisir une date de début et une durée de chantier pour voir le P3W.",
+        ganttRange: (dateDebut, duree, moisDepart) =>
+          `Du ${dateDebut} sur ${duree} semaine(s) • Mois de départ : ${moisDepart}`,
+        btnMoveUp: "↑",
+        btnMoveDown: "↓",
+        btnDelete: "Supprimer",
+        btnVacancesShow: "Afficher congés",
+        btnVacancesHide: "Masquer congés",
+        btnEditOn: "✏️ Mode édition",
+        btnEditOff: "🔒 Lecture seule",
+        confirmReset: "Réinitialiser toutes les données du chantier ?",
+        confirmDeleteIntervenant: "Supprimer cet intervenant ?",
+        jsonInvalid: "Fichier JSON invalide.",
+        jsonError: "Erreur lors de la lecture du JSON.",
+        saveError: "Erreur lors de la sauvegarde locale."
+      },
+      en: {
+        appTitle: "3-Week Planning",
+        subtitle: "P3W board – coordination Project Manager / Superintendent / trade partners.",
+        cardTitleChantier: "Project information",
+        cardTitleIntervenants: "Site participants",
+        cardTitleGantt: "P3W chart (weekly view)",
+        labelCp: "Project manager",
+        labelSurintendant: "Superintendent",
+        labelNomProjet: "Project name",
+        labelNumeroProjet: "Project number",
+        labelClient: "Client",
+        labelAdresse: "Jobsite address",
+        labelDateDebutChantier: "Project start date",
+        labelDureeSemaines: "Project duration (weeks)",
+        btnSaveLocal: "💾 Save (local)",
+        btnReset: "♻️ Reset",
+        btnExport: "⬇️ Export JSON",
+        btnImport: "⬆️ Import JSON",
+        btnAddIntervenant: "+ Add participant",
+        storageHelp:
+          "For V0, data is stored in your browser. JSON export simulates the future data.json in the job folder.",
+        thEntreprise: "Company",
+        thDebut: "Start",
+        thFin: "End",
+        thNotes: "Notes",
+        thActions: "Actions",
+        intervenantsHelp:
+          "Intervention dates will be used to generate the P3W chart below.",
+        statusDirty: "Unsaved changes",
+        statusSaved: "Saved locally",
+        ganttNeedData:
+          "Please enter a start date and a project duration to display the P3W chart.",
+        ganttRange: (dateDebut, duree, moisDepart) =>
+          `From ${dateDebut} for ${duree} week(s) • Start month: ${moisDepart}`,
+        btnMoveUp: "↑",
+        btnMoveDown: "↓",
+        btnDelete: "Delete",
+        btnVacancesShow: "Show days off",
+        btnVacancesHide: "Hide days off",
+        btnEditOn: "✏️ Edit mode",
+        btnEditOff: "🔒 Read only",
+        confirmReset: "Reset all project data?",
+        confirmDeleteIntervenant: "Delete this participant?",
+        jsonInvalid: "Invalid JSON file.",
+        jsonError: "Error while reading JSON file.",
+        saveError: "Error while saving locally."
+      }
+    };
+
+    const dowShort = {
+      fr: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+      en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    };
+
+    const monthNames = {
+      fr: [
+        "janvier","février","mars","avril","mai","juin",
+        "juillet","août","septembre","octobre","novembre","décembre"
+      ],
+      en: [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+      ]
+    };
+
+    // ======== Jours fériés / congés connus ========
+    const holidaysConfig = {
+      holidays: [
+        "2025-09-01",
+        "2025-10-13",
+        "2025-11-10",
+        "2025-12-22",
+        "2025-12-23",
+        "2025-12-24",
+        "2025-12-25",
+        "2025-12-26",
+        "2025-12-27",
+        "2025-12-28",
+        "2025-12-29",
+        "2025-12-30",
+        "2025-12-31",
+        "2026-01-01",
+        "2026-01-02",
+        "2026-01-03",
+        "2026-01-04",
+        "2026-04-06",
+        "2026-05-18",
+        "2026-05-24",
+        "2026-07-03",
+        "2026-09-07",
+        "2026-10-12",
+        "2026-11-13",
+        "2026-12-21",
+        "2026-12-22",
+        "2026-12-23",
+        "2026-12-24",
+        "2026-12-25",
+        "2026-12-26",
+        "2026-12-27",
+        "2026-12-28",
+        "2026-12-29",
+        "2026-12-30",
+        "2026-12-31",
+        "2027-01-01"
+      ]
+    };
+
+    const holidaysSet = new Set(holidaysConfig.holidays);
+
+    function toIsoDate(d) {
+      return d.toISOString().slice(0, 10);
+    }
+
+    function applyTranslations() {
+      const t = translations[currentLang];
+
+      document.getElementById("appTitle").textContent = t.appTitle;
+      document.getElementById("subtitle").textContent = t.subtitle;
+
+      document.getElementById("cardTitleChantier").textContent = t.cardTitleChantier;
+      document.getElementById("cardTitleIntervenants").textContent = t.cardTitleIntervenants;
+      document.getElementById("cardTitleGantt").textContent = t.cardTitleGantt;
+
+      document.getElementById("labelCp").textContent = t.labelCp;
+      document.getElementById("labelSurintendant").textContent = t.labelSurintendant;
+      document.getElementById("labelNomProjet").textContent = t.labelNomProjet;
+      document.getElementById("labelNumeroProjet").textContent = t.labelNumeroProjet;
+      document.getElementById("labelClient").textContent = t.labelClient;
+      document.getElementById("labelAdresse").textContent = t.labelAdresse;
+      document.getElementById("labelDateDebutChantier").textContent = t.labelDateDebutChantier;
+      document.getElementById("labelDureeSemaines").textContent = t.labelDureeSemaines;
+
+      document.getElementById("btnSaveLocal").textContent = t.btnSaveLocal;
+      document.getElementById("btnReset").textContent = t.btnReset;
+      document.getElementById("btnExport").textContent = t.btnExport;
+      document.getElementById("labelImport").firstChild.textContent = t.btnImport + " ";
+
+      document.getElementById("btnAddIntervenant").textContent = t.btnAddIntervenant;
+      document.getElementById("storageHelp").textContent = t.storageHelp;
+
+      document.getElementById("thEntreprise").textContent = t.thEntreprise;
+      document.getElementById("thDebut").textContent = t.thDebut;
+      document.getElementById("thFin").textContent = t.thFin;
+      document.getElementById("thNotes").textContent = t.thNotes;
+      document.getElementById("thActions").textContent = t.thActions;
+
+      document.getElementById("intervenantsHelp").textContent = t.intervenantsHelp;
+
+      document.getElementById("btnLangSwitch").textContent = currentLang.toUpperCase();
+
+      // statut
+      setDirty(dirty);
+
+      const btnVac = document.getElementById("btnToggleVacances");
+      if (btnVac) {
+        btnVac.textContent = showVacances ? t.btnVacancesHide : t.btnVacancesShow;
+      }
+
+      const btnEdit = document.getElementById("btnToggleEditChantier");
+      if (btnEdit) {
+        btnEdit.textContent = chantierEditable ? t.btnEditOff : t.btnEditOn;
+      }
+
+      renderGantt();
+      renderIntervenantsTable();
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === "fr" ? "en" : "fr";
+      applyTranslations();
+    }
+
+    // ======== Modèle de données ========
+
+    const STORAGE_KEY = "p3w-data-v0";
+
+    let data = {
+      chantier: {
+        chargeDeProjet: "",
+        surintendant: "",
+        nomProjet: "",
+        numeroProjet: "",
+        client: "",
+        adresse: "",
+        dateDebut: "",
+        dureeSemaines: 0
+      },
+      intervenants: []
+    };
+
+    let dirty = false;
+    let showVacances = true;       // afficher/masquer les congés dans le Gantt
+    let chantierEditable = true;   // mode édition infos chantier
+
+    const cpOptions = [
+      "",
+      "Émilie Richer-Groulx",
+      "Matthew Rutta",
+      "Myriam Iori",
+      "Pierre Grenier",
+      "Tony Perricione",
+      "Sylvie Lalande",
+      "Marc-Antoine Desjardins"
+    ];
+
+    const surintendantOptions = [
+      "",
+      "Alain Gregoire",
+      "David Lorenzo Gregoire",
+      "Dean Gagné",
+      "Denis Lapointe",
+      "Maxime Dagenais",
+      "Michel Savard ",
+      "Pierre-Luc Lesiege",
+      "Samuel Dubé",
+      "Sébastien Ferguson",
+      "Sébastien Mallet",
+      "Serge Carriere",
+      "Simon Pinsonneault",
+      "Thierry Bates",
+      "Yony Royer"
+    ];
+
+    function populateSelectOptions() {
+      const cpSelect = document.getElementById("cp");
+      const surSelect = document.getElementById("surintendant");
+
+      cpSelect.innerHTML = "";
+      cpOptions.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name || "—";
+        cpSelect.appendChild(opt);
+      });
+
+      surSelect.innerHTML = "";
+      surintendantOptions.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name || "—";
+        surSelect.appendChild(opt);
+      });
+    }
+
+    // ======== Helpers dates ========
+
+    function parseDate(str) {
+      if (!str) return null;
+      const d = new Date(str);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDateLabel(d) {
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      return day + "/" + month;
+    }
+
+    // ======== Mise à jour status ========
+
+    function setDirty(flag) {
+      dirty = flag;
+      const statusText = document.getElementById("status-text");
+      if (!statusText) return;
+      const pill = statusText.parentElement;
+      const t = translations[currentLang];
+
+      if (dirty) {
+        statusText.textContent = t.statusDirty;
+        pill.style.background = "#fef2f2";
+        pill.style.color = "#b91c1c";
+      } else {
+        statusText.textContent = t.statusSaved;
+        pill.style.background = "#ecfdf3";
+        pill.style.color = "#166534";
+      }
+    }
+
+    // ======== Chargement / sauvegarde ========
+
+    function loadFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          data = parsed;
+        }
+      } catch (e) {
+        console.error("Erreur de chargement localStorage:", e);
+      }
+    }
+
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        setDirty(false);
+      } catch (e) {
+        console.error("Erreur de sauvegarde localStorage:", e);
+        alert(translations[currentLang].saveError);
+      }
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "data.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importJSON(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported || !imported.chantier || !Array.isArray(imported.intervenants)) {
+            alert(translations[currentLang].jsonInvalid);
+            return;
+          }
+          data = imported;
+          bindFormFromData();
+          renderIntervenantsTable();
+          renderGantt();
+          setDirty(true);
+        } catch (err) {
+          console.error(err);
+          alert(translations[currentLang].jsonError);
+        }
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function resetData() {
+      if (!confirm(translations[currentLang].confirmReset)) return;
+      data = {
+        chantier: {
+          chargeDeProjet: "",
+          surintendant: "",
+          nomProjet: "",
+          numeroProjet: "",
+          client: "",
+          adresse: "",
+          dateDebut: "",
+          dureeSemaines: 0
+        },
+        intervenants: []
+      };
+      bindFormFromData();
+      renderIntervenantsTable();
+      renderGantt();
+      setDirty(true);
+    }
+
+    // ======== Binding formulaire chantier ========
+
+    function bindFormFromData() {
+      document.getElementById("cp").value = data.chantier.chargeDeProjet || "";
+      document.getElementById("surintendant").value = data.chantier.surintendant || "";
+      document.getElementById("nomProjet").value = data.chantier.nomProjet || "";
+      document.getElementById("numeroProjet").value = data.chantier.numeroProjet || "";
+      document.getElementById("client").value = data.chantier.client || "";
+      document.getElementById("adresse").value = data.chantier.adresse || "";
+      document.getElementById("dateDebutChantier").value = data.chantier.dateDebut || "";
+      document.getElementById("dureeSemaines").value = data.chantier.dureeSemaines || "";
+    }
+
+    function setupFormListeners() {
+      const cpSelect = document.getElementById("cp");
+      const surSelect = document.getElementById("surintendant");
+
+      cpSelect.addEventListener("change", () => {
+        data.chantier.chargeDeProjet = cpSelect.value;
+        setDirty(true);
+      });
+
+      surSelect.addEventListener("change", () => {
+        data.chantier.surintendant = surSelect.value;
+        setDirty(true);
+      });
+
+      const map = [
+        ["nomProjet", "nomProjet"],
+        ["numeroProjet", "numeroProjet"],
+        ["client", "client"],
+        ["adresse", "adresse"],
+        ["dateDebutChantier", "dateDebut"],
+        ["dureeSemaines", "dureeSemaines"]
+      ];
+
+      map.forEach(([id, field]) => {
+        const el = document.getElementById(id);
+        el.addEventListener("input", () => {
+          if (field === "dureeSemaines") {
+            data.chantier[field] = Number(el.value) || 0;
+          } else {
+            data.chantier[field] = el.value;
+          }
+          setDirty(true);
+          renderGantt();
+        });
+      });
+    }
+
+    function updateChantierEditMode() {
+      const editable = chantierEditable;
+      const fieldIds = [
+        "cp",
+        "surintendant",
+        "nomProjet",
+        "numeroProjet",
+        "client",
+        "adresse",
+        "dateDebutChantier",
+        "dureeSemaines"
+      ];
+
+      fieldIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.tagName === "SELECT") {
+          el.disabled = !editable;
+        } else {
+          el.readOnly = !editable;
+        }
+      });
+
+      const btn = document.getElementById("btnToggleEditChantier");
+      if (btn) {
+        const t = translations[currentLang];
+        btn.textContent = editable ? t.btnEditOff : t.btnEditOn;
+      }
+    }
+
+    // ======== Intervenants ========
+
+    function addIntervenant() {
+      const newId = (data.intervenants.at(-1)?.id || 0) + 1;
+      data.intervenants.push({
+        id: newId,
+        entreprise: "",
+        dateDebut: "",
+        dateFin: "",
+        notes: "",
+        manualOverrides: {}
+      });
+      setDirty(true);
+      renderIntervenantsTable();
+      renderGantt();
+    }
+
+    function deleteIntervenant(id) {
+      if (!confirm(translations[currentLang].confirmDeleteIntervenant)) return;
+      data.intervenants = data.intervenants.filter((i) => i.id !== id);
+      setDirty(true);
+      renderIntervenantsTable();
+      renderGantt();
+    }
+
+    function moveIntervenant(id, direction) {
+      const index = data.intervenants.findIndex((i) => i.id === id);
+      if (index === -1) return;
+
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= data.intervenants.length) return;
+
+      const temp = data.intervenants[index];
+      data.intervenants[index] = data.intervenants[newIndex];
+      data.intervenants[newIndex] = temp;
+
+      setDirty(true);
+      renderIntervenantsTable();
+      renderGantt();
+    }
+
+    function renderIntervenantsTable() {
+      const tbody = document.getElementById("intervenantsBody");
+      tbody.innerHTML = "";
+      const t = translations[currentLang];
+
+      data.intervenants.forEach((intervenant) => {
+        const tr = document.createElement("tr");
+
+        function createInputCell(field, type = "text") {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = type;
+          input.className = "input-inline";
+          input.value = intervenant[field] || "";
+          input.addEventListener("input", () => {
+            if (field === "dateDebut" || field === "dateFin") {
+              intervenant[field] = input.value;
+              renderGantt();
+            } else {
+              intervenant[field] = input.value;
+            }
+            setDirty(true);
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        tr.appendChild(createInputCell("entreprise", "text"));
+        tr.appendChild(createInputCell("dateDebut", "date"));
+        tr.appendChild(createInputCell("dateFin", "date"));
+        tr.appendChild(createInputCell("notes", "text"));
+
+        const tdActions = document.createElement("td");
+
+        const btnUp = document.createElement("button");
+        btnUp.className = "btn-secondary btn-icon-small";
+        btnUp.textContent = t.btnMoveUp;
+        btnUp.title = t.btnMoveUp;
+        btnUp.addEventListener("click", () => moveIntervenant(intervenant.id, "up"));
+        tdActions.appendChild(btnUp);
+
+        const btnDown = document.createElement("button");
+        btnDown.className = "btn-secondary btn-icon-small";
+        btnDown.textContent = t.btnMoveDown;
+        btnDown.title = t.btnMoveDown;
+        btnDown.style.marginLeft = "4px";
+        btnDown.addEventListener("click", () => moveIntervenant(intervenant.id, "down"));
+        tdActions.appendChild(btnDown);
+
+        const btnDel = document.createElement("button");
+        btnDel.textContent = t.btnDelete;
+        btnDel.className = "btn-danger btn-icon-small";
+        btnDel.style.marginLeft = "4px";
+        btnDel.addEventListener("click", () => deleteIntervenant(intervenant.id));
+        tdActions.appendChild(btnDel);
+
+        tr.appendChild(tdActions);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // clic sur une cellule pour override X
+    function handleGanttClick(event) {
+      const cell = event.target.closest("td[data-date][data-intervenant-id]");
+      if (!cell) return;
+
+      const iso = cell.dataset.date;
+      const id = Number(cell.dataset.intervenantId);
+      const intervenant = data.intervenants.find((i) => i.id === id);
+      if (!intervenant) return;
+
+      if (!intervenant.manualOverrides) {
+        intervenant.manualOverrides = {};
+      }
+
+      const d = new Date(iso);
+      const intStart = parseDate(intervenant.dateDebut);
+      const intEnd = parseDate(intervenant.dateFin);
+
+      const autoActive = intStart && intEnd && d >= intStart && d <= intEnd;
+      const currentOverride = intervenant.manualOverrides[iso];
+
+      const currentEffective =
+        currentOverride !== undefined ? currentOverride : !!autoActive;
+
+      const newEffective = !currentEffective;
+
+      if (newEffective === !!autoActive) {
+        delete intervenant.manualOverrides[iso];
+      } else {
+        intervenant.manualOverrides[iso] = newEffective;
+      }
+
+      setDirty(true);
+      renderGantt();
+    }
+
+    // ======== Gantt / P3W ========
+    // Retourne le lundi de la semaine sous forme "YYYY-MM-DD"
+    
+    function getWeekKey(date) {
+      const d = new Date(date.getTime());
+      const jsDay = d.getDay();           // 0 = Dim, 1 = Lun, ...
+      const offset = (jsDay + 6) % 7;     // 0 = Lun, 6 = Dim
+      d.setDate(d.getDate() - offset);    // recule jusqu'au lundi
+      return d.toISOString().slice(0, 10);
+    }
+
+    function renderGantt() {
+      const container = document.getElementById("ganttContainer");
+      container.innerHTML = "";
+
+      const info = document.getElementById("ganttInfo");
+      const t = translations[currentLang];
+
+      const start = parseDate(data.chantier.dateDebut);
+      const duree = Number(data.chantier.dureeSemaines) || 0;
+
+      if (!start || duree <= 0) {
+        info.textContent = t.ganttNeedData;
+        return;
+      }
+
+      const totalDays = Math.max(duree * 7, 21);
+
+      // --- Construction de tous les jours du chantier ---
+      const allDays = [];
+      for (let i = 0; i < totalDays; i++) {
+        const d = new Date(start.getTime());
+        d.setDate(d.getDate() + i);
+        const iso = toIsoDate(d);
+        const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+        const isHoliday = holidaysSet.has(iso);
+
+        allDays.push({
+          index: i,
+          date: d,
+          iso,
+          isWeekend,
+          isHoliday,
+          weekKey: getWeekKey(d)
+        });
+      }
+
+      // --- Détection des semaines 100 % congés (tous les jours ouvrables fériés) ---
+      const weeksInfo = {};
+      allDays.forEach((day) => {
+        const key = day.weekKey;
+        if (!weeksInfo[key]) {
+          weeksInfo[key] = {
+            hasWorkday: false,
+            allWorkdaysHoliday: true
+          };
+        }
+        if (!day.isWeekend) {
+          weeksInfo[key].hasWorkday = true;
+          if (!day.isHoliday) {
+            weeksInfo[key].allWorkdaysHoliday = false;
+          }
+        }
+      });
+
+      const vacationWeeks = new Set(
+        Object.entries(weeksInfo)
+          .filter(([_, info]) => info.hasWorkday && info.allWorkdaysHoliday)
+          .map(([key]) => key)
+      );
+
+      // --- Filtrage des jours visibles selon showVacances ---
+      const visibleDays = allDays.filter((day) => {
+        if (showVacances) return true;
+        // si la semaine est une semaine de vacances → on masque toute la semaine (jours + week-ends)
+        if (vacationWeeks.has(day.weekKey)) return false;
+        return true;
+      });
+
+      if (visibleDays.length === 0) {
+        info.textContent = t.ganttNeedData;
+        return;
+      }
+
+      // --- Infos texte ---
+      const firstDay = visibleDays[0].date;
+      const moisDepart =
+        monthNames[currentLang][firstDay.getMonth()] + " " + firstDay.getFullYear();
+      info.textContent = t.ganttRange(data.chantier.dateDebut, duree, moisDepart);
+
+      // --- Groupes de mois pour le bandeau supérieur ---
+      const monthGroups = [];
+      let currentMonth = firstDay.getMonth();
+      let currentYear = firstDay.getFullYear();
+      let groupStartIndex = 0;
+
+      visibleDays.forEach((day, idx) => {
+        const m = day.date.getMonth();
+        const y = day.date.getFullYear();
+
+        if (m !== currentMonth || y !== currentYear) {
+          monthGroups.push({
+            month: currentMonth,
+            year: currentYear,
+            span: idx - groupStartIndex
+          });
+          currentMonth = m;
+          currentYear = y;
+          groupStartIndex = idx;
+        }
+      });
+
+      monthGroups.push({
+        month: currentMonth,
+        year: currentYear,
+        span: visibleDays.length - groupStartIndex
+      });
+
+      // --- Construction du tableau ---
+      const table = document.createElement("table");
+      table.className = "gantt-table";
+
+      const thead = document.createElement("thead");
+
+      // Ligne mois
+      const monthRow = document.createElement("tr");
+      const thMonthLeft = document.createElement("th");
+      thMonthLeft.className = "gantt-left-col gantt-month-header";
+      thMonthLeft.textContent = currentLang === "fr" ? "Mois" : "Months";
+      monthRow.appendChild(thMonthLeft);
+
+      monthGroups.forEach((grp) => {
+        const th = document.createElement("th");
+        th.colSpan = grp.span;
+        th.className = "gantt-month-header";
+        const label =
+          monthNames[currentLang][grp.month] + " " + grp.year;
+        th.textContent = label;
+        monthRow.appendChild(th);
+      });
+
+      thead.appendChild(monthRow);
+
+      // Ligne jours
+      const dayRow = document.createElement("tr");
+      const thLeft = document.createElement("th");
+      thLeft.className = "gantt-left-col";
+      thLeft.textContent = currentLang === "fr" ? "Intervenant" : "Participant";
+      dayRow.appendChild(thLeft);
+
+      visibleDays.forEach((day) => {
+        const d = day.date;
+        const dow = dowShort[currentLang][d.getDay()];
+        const initial = dow.charAt(0); // L, M, M, J, V, S, D
+        const label = initial + " " + formatDateLabel(d); // ex : "L 01/12"
+        const th = document.createElement("th");
+        th.textContent = label;
+        if (day.isWeekend) th.classList.add("gantt-weekend");
+        if (day.isHoliday) th.classList.add("gantt-day-off");
+        dayRow.appendChild(th);
+      });
+
+      thead.appendChild(dayRow);
+      table.appendChild(thead);
+
+      // --- Corps ---
+      const tbody = document.createElement("tbody");
+
+      data.intervenants.forEach((intervenant) => {
+        const row = document.createElement("tr");
+
+        const tdLeft = document.createElement("td");
+        tdLeft.className = "gantt-left-col";
+        const label =
+          intervenant.entreprise ||
+          (currentLang === "fr" ? "Intervenant " : "Participant ") + intervenant.id;
+        tdLeft.textContent = label;
+        row.appendChild(tdLeft);
+
+        const intStart = parseDate(intervenant.dateDebut);
+        const intEnd = parseDate(intervenant.dateFin);
+        const overrides = intervenant.manualOverrides || {};
+
+        visibleDays.forEach((day) => {
+          const d = day.date;
+          const iso = day.iso;
+          const td = document.createElement("td");
+
+          td.dataset.date = iso;
+          td.dataset.intervenantId = String(intervenant.id);
+
+          if (day.isWeekend) td.classList.add("gantt-weekend");
+          if (day.isHoliday) td.classList.add("gantt-day-off");
+
+          let autoActive = false;
+          if (intStart && intEnd) {
+            autoActive = d >= intStart && d <= intEnd;
+          }
+
+          const override = overrides[iso];
+          const isActive = override !== undefined ? override : autoActive;
+
+          if (isActive) {
+            td.classList.add("gantt-cell-active");
+            td.textContent = "X";
+          } else {
+            td.classList.add("gantt-cell-empty");
+            td.textContent = "";
+          }
+
+          row.appendChild(td);
+        });
+
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(tbody);
+      container.appendChild(table);
+    }
+
+
+    // ======== Init / collapsible ========
+
+    function init() {
+      populateSelectOptions();
+      loadFromLocalStorage();
+      bindFormFromData();
+      setupFormListeners();
+      updateChantierEditMode();
+
+      document.getElementById("btnSaveLocal").addEventListener("click", () => {
+        saveToLocalStorage();
+      });
+
+      document.getElementById("btnPrint").addEventListener("click", () => {
+        window.print();
+      });
+
+      document.getElementById("btnReset").addEventListener("click", () => {
+        resetData();
+      });
+
+      document.getElementById("btnExport").addEventListener("click", () => {
+        exportJSON();
+      });
+
+      document.getElementById("btnAddIntervenant").addEventListener("click", () => {
+        addIntervenant();
+      });
+
+      document.getElementById("fileImport").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          importJSON(file);
+          e.target.value = "";
+        }
+      });
+
+      document.getElementById("btnToggleEditChantier").addEventListener("click", () => {
+        chantierEditable = !chantierEditable;
+        updateChantierEditMode();
+      });
+
+      document.getElementById("btnToggleVacances").addEventListener("click", () => {
+        showVacances = !showVacances;
+        applyTranslations();
+      });
+
+      document.getElementById("ganttContainer").addEventListener("click", handleGanttClick);
+
+      document.getElementById("btnLangSwitch").addEventListener("click", toggleLanguage);
+
+      const btnToggle = document.getElementById("btnToggleIntervenants");
+      const content = document.getElementById("intervenantsContent");
+      let collapsed = false;
+      btnToggle.addEventListener("click", () => {
+        collapsed = !collapsed;
+        content.style.display = collapsed ? "none" : "block";
+        btnToggle.textContent = collapsed ? "▲" : "▼";
+      });
+
+      setDirty(false);
+      renderIntervenantsTable();
+      renderGantt();
+      applyTranslations();
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
