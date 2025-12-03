@@ -1283,18 +1283,11 @@
       const statusEl = document.getElementById("loadModalStatus");
       if (!listEl || !statusEl) return;
 
-      const search = filterText.trim().toLowerCase();
-
-      const filtered = loadModalProjects.filter((p) => {
-        const id = (p.projectId || "").toLowerCase();
-        const name = (p.nomProjet || p.name || "").toLowerCase();
-        if (!search) return true;
-        return id.includes(search) || name.includes(search);
-      });
+      const filtered = loadModalProjects; // DIAGNOSTIC : pas de filtre
 
       listEl.innerHTML = "";
 
-      if (filtered.length === 0) {
+      if (!filtered || filtered.length === 0) {
         statusEl.textContent = "Aucun projet ne correspond à la recherche.";
         return;
       }
@@ -1316,7 +1309,6 @@
         row.appendChild(spanName);
 
         row.addEventListener("click", () => {
-          // on charge le projet sélectionné
           closeLoadModal();
           loadFromCloud(p.projectId || "");
         });
@@ -1324,7 +1316,6 @@
         listEl.appendChild(row);
       });
     }
-
 
     async function saveToCloud() {
       const t = translations[currentLang];
