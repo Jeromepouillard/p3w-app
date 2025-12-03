@@ -478,6 +478,12 @@
 
     /* ================== MODE IMPRESSION ================== */
     @media print {
+
+        * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
       @page {
         size: 11in 17in landscape;
         margin: 10mm;
@@ -527,7 +533,20 @@
       .card {
         page-break-inside: avoid;
       }
+
+      #btnToggleEditChantier,
+      #btnToggleVacances {
+        display: none !important;
+      }
+
+      .gantt-table th.gantt-weekend,
+      .gantt-table td.gantt-weekend {
+        background: #d1d5db !important; /* plus foncé pour l'impression */
+      }
+
     }
+    
+
   </style>
 </head>
 <body>
@@ -877,6 +896,7 @@
       document.getElementById("labelImport").firstChild.textContent = t.btnImport + " ";
       document.getElementById("btnSaveCloud").textContent = t.btnSaveCloud;
       document.getElementById("btnLoadCloud").textContent = t.btnLoadCloud;
+      document.getElementById("btnPrint").textContent = t.btnPrint;
 
       document.getElementById("btnAddIntervenant").textContent = t.btnAddIntervenant;
       document.getElementById("storageHelp").textContent = t.storageHelp;
