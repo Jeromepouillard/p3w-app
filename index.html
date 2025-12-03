@@ -272,7 +272,8 @@
     .gantt-container {
       border-radius: 6px;
       border: 1px solid #e5e7eb;
-      overflow: auto;
+      overflow-x: auto;   /* scroll horizontal */
+      overflow-y: auto;   /* ou hidden si tu ne veux pas de scroll vertical */
       background: white;
       max-height: 420px;
     }
@@ -343,19 +344,29 @@
     }
 
     .gantt-weekend {
-      background: #f3f4f6;
+      background: #d1d5db; /* plus foncé */
     }
 
     .gantt-day-off {
       background: #fee2e2;
     }
 
-    /* Week-ends et jours fériés plus étroits (≈ 1/3 de 60px) */
+    /* Week-ends et jours fériés ≈ moitié des jours normaux */
     .gantt-table th.gantt-weekend,
-    .gantt-table td.gantt-weekend,
+    .gantt-table td.gantt-weekend {
+      min-width: 16px;
+    }
+
     .gantt-table th.gantt-day-off,
     .gantt-table td.gantt-day-off {
-      min-width: 20px;
+      min-width: 20px; /* jours fériés "normaux" */
+    }
+
+    /* Masquer les boutons locaux pour l’instant */
+    #btnSaveLocal,
+    #btnExport,
+    #labelImport {
+      display: none !important;
     }
 
     /* Responsive */
@@ -372,6 +383,98 @@
         gap: 8px;
       }
     }
+    /* ===== Modale "Charger un projet" ===== */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 16px 20px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 70vh;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal-search-input {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      font-size: 0.85rem;
+      box-sizing: border-box;
+    }
+
+    .modal-list-container {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      max-height: 260px;
+      overflow: auto;
+      background: #f9fafb;
+    }
+
+    .modal-project-row {
+      padding: 6px 8px;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #e5e7eb;
+      cursor: pointer;
+    }
+
+    .modal-project-row:last-child {
+      border-bottom: none;
+    }
+
+    .modal-project-row:hover {
+      background: #e5e7eb;
+    }
+
+    .modal-project-id {
+      font-weight: 600;
+      margin-right: 6px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+
 
     /* ================== MODE IMPRESSION ================== */
     @media print {
@@ -500,6 +603,12 @@
       <div class="button-row">
         <button id="btnSaveLocal" class="btn-primary">💾 Enregistrer (local)</button>
         <button id="btnPrint" class="btn-secondary">🖨️ Imprimer</button>
+        <input
+          id="printDateInput"
+          type="date"
+          style="padding:4px 6px; font-size:0.8rem; max-width:150px; margin-left:4px;"
+        />
+        <span class="small">Date de référence pour l’impression des 3 semaines</span>
         <button id="btnReset" class="btn-secondary">♻️ Réinitialiser</button>
         <button id="btnExport" class="btn-outline">⬇️ Exporter JSON</button>
         <label id="labelImport" class="btn-outline" style="cursor: pointer;">
@@ -510,7 +619,7 @@
         <button id="btnLoadCloud" class="btn-secondary">☁️ Charger (cloud)</button>
       </div>
       <p id="storageHelp" class="small">
-        Pour la V0, les données sont sauvegardées dans ton navigateur. L’export JSON simule le futur
+        Les données sont sauvegardées dans un cloud privé et sécurisé
         <code>data.json</code> dans le dossier du chantier.
       </p>
     </div>
@@ -586,6 +695,7 @@
         labelDateDebutChantier: "Date de début du chantier",
         labelDureeSemaines: "Durée du chantier (en semaines)",
         btnSaveLocal: "💾 Enregistrer (local)",
+        btnPrint: "🖨️ Imprimer",
         btnReset: "♻️ Réinitialiser",
         btnExport: "⬇️ Exporter JSON",
         btnImport: "⬆️ Importer JSON",
@@ -595,7 +705,7 @@
         cloudLoadNotFound: "Aucun projet trouvé pour ce numéro.",
         cloudError: "Erreur lors de la communication avec le serveur.",
         storageHelp:
-          "Pour la V0, les données sont sauvegardées dans ton navigateur. L’export JSON simule le futur data.json dans le dossier du chantier.",
+          "Les données sont sauvegardées dans un cloud privé et sécurisé",
         thEntreprise: "Entreprise",
         thDebut: "Début",
         thFin: "Fin",
@@ -638,6 +748,7 @@
         labelDateDebutChantier: "Project start date",
         labelDureeSemaines: "Project duration (weeks)",
         btnSaveLocal: "💾 Save (local)",
+        btnPrint: "🖨️ Print",
         btnReset: "♻️ Reset",
         btnExport: "⬇️ Export JSON",
         btnImport: "⬆️ Import JSON",
@@ -648,7 +759,7 @@
         cloudError: "Error while communicating with the server.",
         btnAddIntervenant: "+ Add participant",
         storageHelp:
-          "For V0, data is stored in your browser. JSON export simulates the future data.json in the job folder.",
+          "The data is saved in a private and secure cloud",
         thEntreprise: "Company",
         thDebut: "Start",
         thFin: "End",
@@ -825,6 +936,9 @@
     let dirty = false;
     let showVacances = true;       // afficher/masquer les congés dans le Gantt
     let chantierEditable = true;   // mode édition infos chantier
+    let isPrintMode = false;       // quand true, on limite le Gantt à 3 semaines
+    let printStartDate = null;     // date de début pour l'impression (lundi de la semaine choisie)
+
 
     const cpOptions = [
       "",
@@ -1115,6 +1229,102 @@
       renderGantt();
       setDirty(false);
     }
+    
+    // ======== Modale "Charger un projet" ========
+
+    let loadModalProjects = [];
+
+    function openLoadModal() {
+      const overlay = document.getElementById("loadModalOverlay");
+      const statusEl = document.getElementById("loadModalStatus");
+      const listEl = document.getElementById("loadModalList");
+      const searchEl = document.getElementById("loadModalSearch");
+
+      if (!overlay || !statusEl || !listEl) return;
+
+      overlay.classList.add("open");
+      statusEl.textContent = "Chargement des projets...";
+      listEl.innerHTML = "";
+      if (searchEl) searchEl.value = "";
+
+      fetch(`${API_BASE_URL}/api/list`)
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error("HTTP " + resp.status);
+          }
+          return resp.json();
+        })
+        .then((list) => {
+          if (!Array.isArray(list) || list.length === 0) {
+            statusEl.textContent = "Aucun projet trouvé dans le cloud.";
+            loadModalProjects = [];
+            return;
+          }
+          loadModalProjects = list;
+          statusEl.textContent = "";
+          renderLoadModalList();
+        })
+        .catch((err) => {
+          console.error("Erreur fetch /api/list:", err);
+          statusEl.textContent = "Impossible de récupérer la liste des projets.";
+          loadModalProjects = [];
+        });
+    }
+
+    function closeLoadModal() {
+      const overlay = document.getElementById("loadModalOverlay");
+      if (overlay) {
+        overlay.classList.remove("open");
+      }
+    }
+
+    function renderLoadModalList(filterText = "") {
+      const listEl = document.getElementById("loadModalList");
+      const statusEl = document.getElementById("loadModalStatus");
+      if (!listEl || !statusEl) return;
+
+      const search = filterText.trim().toLowerCase();
+
+      const filtered = loadModalProjects.filter((p) => {
+        const id = (p.projectId || "").toLowerCase();
+        const name = (p.nomProjet || p.name || "").toLowerCase();
+        if (!search) return true;
+        return id.includes(search) || name.includes(search);
+      });
+
+      listEl.innerHTML = "";
+
+      if (filtered.length === 0) {
+        statusEl.textContent = "Aucun projet ne correspond à la recherche.";
+        return;
+      }
+
+      statusEl.textContent = "";
+
+      filtered.forEach((p) => {
+        const row = document.createElement("div");
+        row.className = "modal-project-row";
+
+        const spanId = document.createElement("span");
+        spanId.className = "modal-project-id";
+        spanId.textContent = p.projectId || "(sans numéro)";
+
+        const spanName = document.createElement("span");
+        spanName.textContent = p.nomProjet || p.name || "";
+
+        row.appendChild(spanId);
+        row.appendChild(spanName);
+
+        row.addEventListener("click", () => {
+          // on charge le projet sélectionné
+          closeLoadModal();
+          loadFromCloud(p.projectId || "");
+        });
+
+        listEl.appendChild(row);
+      });
+    }
+
 
     async function saveToCloud() {
       const t = translations[currentLang];
@@ -1142,9 +1352,9 @@
       }
     }
 
-    async function loadFromCloud() {
+    async function loadFromCloud(projectIdOverride) {
       const t = translations[currentLang];
-      const projectId = getProjectId();
+      const projectId = projectIdOverride || getProjectId();
       if (!projectId) return;
 
       try {
@@ -1170,6 +1380,7 @@
         alert(t.cloudError);
       }
     }
+
 
 
     // ======== Intervenants ========
@@ -1293,7 +1504,13 @@
       const intStart = parseDate(intervenant.dateDebut);
       const intEnd = parseDate(intervenant.dateFin);
 
-      const autoActive = intStart && intEnd && d >= intStart && d <= intEnd;
+      const autoActive =
+        intStart && intEnd &&
+        d >= intStart &&
+        d <= intEnd &&
+        d.getDay() !== 0 &&
+        d.getDay() !== 6; // jamais auto le week-end
+
       const currentOverride = intervenant.manualOverrides[iso];
 
       const currentEffective =
@@ -1321,6 +1538,13 @@
       d.setDate(d.getDate() - offset);    // recule jusqu'au lundi
       return d.toISOString().slice(0, 10);
     }
+    function getWeekStart(date) {
+      const d = new Date(date.getTime());
+      const jsDay = d.getDay();        // 0 = Dim, 1 = Lun, ...
+      const offset = (jsDay + 6) % 7;  // 0 = Lun, 6 = Dim
+      d.setDate(d.getDate() - offset);
+      return d;
+    }
 
     function renderGantt() {
       const container = document.getElementById("ganttContainer");
@@ -1337,7 +1561,8 @@
         return;
       }
 
-      const totalDays = Math.max(duree * 7, 21);
+      const totalDays = Math.max(duree * 7, 21); // mode normal : durée complète, minimum 3 semaines
+
 
       // --- Construction de tous les jours du chantier ---
       const allDays = [];
@@ -1383,17 +1608,28 @@
       );
 
       // --- Filtrage des jours visibles selon showVacances ---
-      const visibleDays = allDays.filter((day) => {
-        if (showVacances) return true;
-        // si la semaine est une semaine de vacances → on masque toute la semaine (jours + week-ends)
-        if (vacationWeeks.has(day.weekKey)) return false;
+      let visibleDays = allDays.filter((day) => {
+        if (!showVacances && vacationWeeks.has(day.weekKey)) {
+          // on masque les semaines 100% vacances si le toggle vacances est OFF
+          return false;
+        }
         return true;
       });
+
+      // En mode impression : on part de printStartDate, puis 21 jours max
+      if (isPrintMode) {
+        if (printStartDate) {
+          visibleDays = visibleDays.filter((day) => day.date >= printStartDate);
+        }
+        visibleDays = visibleDays.slice(0, 21); // ≈ 3 semaines
+      }
+
 
       if (visibleDays.length === 0) {
         info.textContent = t.ganttNeedData;
         return;
       }
+
 
       // --- Infos texte ---
       const firstDay = visibleDays[0].date;
@@ -1463,9 +1699,17 @@
 
       visibleDays.forEach((day) => {
         const d = day.date;
-        const dow = dowShort[currentLang][d.getDay()];
-        const initial = dow.charAt(0); // L, M, M, J, V, S, D
-        const label = initial + " " + formatDateLabel(d); // ex : "L 01/12"
+        const dowLabel = dowShort[currentLang][d.getDay()].slice(0, 3); // "Lun", "Mar", "Mer"...
+
+        let label;
+        if (day.isWeekend) {
+          // Week-end : juste "Sam", "Dim"
+          label = dowLabel;
+        } else {
+          // Semaine : "Lun 02/12"
+          label = `${dowLabel} ${formatDateLabel(d)}`;
+        }
+
         const th = document.createElement("th");
         th.textContent = label;
         if (day.isWeekend) th.classList.add("gantt-weekend");
@@ -1475,6 +1719,7 @@
 
       thead.appendChild(dayRow);
       table.appendChild(thead);
+
 
       // --- Corps ---
       const tbody = document.createElement("tbody");
@@ -1506,12 +1751,14 @@
           if (day.isHoliday) td.classList.add("gantt-day-off");
 
           let autoActive = false;
-          if (intStart && intEnd) {
+          // Les jours AUTO ne sont actifs que du lundi au vendredi
+          if (intStart && intEnd && !day.isWeekend) {
             autoActive = d >= intStart && d <= intEnd;
           }
 
           const override = overrides[iso];
           const isActive = override !== undefined ? override : autoActive;
+
 
           if (isActive) {
             td.classList.add("gantt-cell-active");
@@ -1546,7 +1793,38 @@
       });
 
       document.getElementById("btnPrint").addEventListener("click", () => {
+        const prevShowVacances = showVacances;
+        const input = document.getElementById("printDateInput");
+
+        let baseDate = null;
+
+        // 1) Si une date est choisie dans le calendrier → on part de SA semaine
+        if (input && input.value) {
+          const d = new Date(input.value);
+          if (!isNaN(d.getTime())) {
+            baseDate = d;
+          }
+        }
+
+        // 2) Sinon → semaine ACTUELLE (celle d'aujourd'hui), même si on est mercredi/vendredi
+        if (!baseDate) {
+          baseDate = new Date();
+        }
+
+        // Lundi de la semaine de baseDate (passé ou futur, on respecte)
+        printStartDate = getWeekStart(baseDate);
+
+        isPrintMode = true;
+        showVacances = false; // le client ne voit jamais les semaines 100% vacances
+        renderGantt();
+
         window.print();
+
+        // Retour à la vue normale
+        isPrintMode = false;
+        printStartDate = null;
+        showVacances = prevShowVacances;
+        renderGantt();
       });
 
       document.getElementById("btnSaveLocal").addEventListener("click", () => {
@@ -1562,7 +1840,7 @@
       });
 
       document.getElementById("btnLoadCloud").addEventListener("click", () => {
-        loadFromCloud();
+        openLoadModal();
       });
 
       document.getElementById("btnReset").addEventListener("click", () => {
@@ -1598,6 +1876,19 @@
       document.getElementById("ganttContainer").addEventListener("click", handleGanttClick);
 
       document.getElementById("btnLangSwitch").addEventListener("click", toggleLanguage);
+      const loadModalCancel = document.getElementById("loadModalCancel");
+      if (loadModalCancel) {
+        loadModalCancel.addEventListener("click", () => {
+          closeLoadModal();
+        });
+      }
+
+      const loadModalSearch = document.getElementById("loadModalSearch");
+      if (loadModalSearch) {
+        loadModalSearch.addEventListener("input", () => {
+          renderLoadModalList(loadModalSearch.value);
+        });
+      }
 
       const btnToggle = document.getElementById("btnToggleIntervenants");
       const content = document.getElementById("intervenantsContent");
@@ -1618,5 +1909,34 @@
     window.loadFromCloud = loadFromCloud;
     window.saveToCloud = saveToCloud;
   </script>
+  <!-- 🔥 Modale "Charger un projet" (AJOUT ICI) -->
+  <div id="loadModalOverlay" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Charger un projet</h3>
+      </div>
+      <div class="modal-body">
+        <input
+          id="loadModalSearch"
+          type="text"
+          class="modal-search-input"
+          placeholder="Rechercher par numéro ou nom de projet..."
+        />
+        <span id="loadModalHelp" class="small">
+          Sélectionne un projet dans la liste ci-dessous.
+        </span>
+        <div class="modal-list-container">
+          <div id="loadModalStatus" class="small" style="padding: 6px 8px;">
+            Chargement des projets...
+          </div>
+          <div id="loadModalList"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="loadModalCancel" class="btn-secondary">Annuler</button>
+      </div>
+    </div>
+  </div>
+  <!-- 🔥 FIN MODALE -->
 </body>
 </html>
